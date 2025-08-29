@@ -120,7 +120,8 @@
             backdrop-filter: blur(10px);
         }
 
-        #countdown-screen h1 {
+        #countdown-screen h1,
+        #final-puzzle-screen h1 {
             font-family: 'Playfair Display', serif;
             font-size: 2.8rem;
             margin-bottom: 20px;
@@ -159,13 +160,15 @@
             text-transform: uppercase;
         }
 
-        .daily-content {
+        .daily-content,
+        .final-puzzle-content {
             margin-top: 30px;
             border-top: 1px solid rgba(255, 255, 255, 0.2);
             padding-top: 30px;
         }
 
-        .daily-content h2 {
+        .daily-content h2,
+        .final-puzzle-content h2 {
             font-family: 'Playfair Display', serif;
             font-size: 1.8rem;
             color: #fff;
@@ -203,6 +206,10 @@
 
         .puzzle-box button:hover {
             background: #c2185b;
+        }
+
+        #final-puzzle-screen {
+            display: none;
         }
 
         #final-reveal-screen h1 {
@@ -290,8 +297,103 @@
         .next-btn {
             right: 10px;
         }
+        
+        .message-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 999;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease-in-out, visibility 0.3s ease-in-out;
+        }
+
+        .message-modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .message-modal-content {
+            background: #fff;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+            max-width: 400px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            transform: scale(0.9);
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .message-modal-overlay.visible .message-modal-content {
+            transform: scale(1);
+        }
+        
+        #success-modal .message-modal-content {
+            background: linear-gradient(135deg, #e6ffe6 0%, #ffe6f2 100%);
+            color: #333;
+            border: 2px solid #a8e6a8;
+        }
+        #success-modal h3 {
+            font-family: 'Playfair Display', serif;
+            color: #28a745;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+        #success-modal p {
+            font-size: 1.2rem;
+            line-height: 1.5;
+            color: #555;
+        }
+
+        #error-modal .message-modal-content {
+            background: linear-gradient(135deg, #ffe0e0 0%, #f0c0f0 100%);
+            color: #333;
+            border: 2px solid #dc3545;
+        }
+        #error-modal h3 {
+            font-family: 'Playfair Display', serif;
+            color: #dc3545;
+            font-size: 1.8rem;
+            margin-bottom: 15px;
+        }
+        #error-modal p {
+            font-size: 1.2rem;
+            line-height: 1.5;
+            color: #555;
+        }
+
+        .message-modal-content button {
+            background: #e91e63;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 10px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: background 0.3s;
+        }
+
+        .message-modal-content button:hover {
+            background: #c2185b;
+        }
 
         @media (max-width: 600px) {
+            #countdown-screen h1,
+            #final-puzzle-screen h1 {
+                font-size: 2rem;
+            }
+
+            #final-reveal-screen h1 {
+                font-size: 2.2rem;
+            }
+
             #countdown-timer {
                 gap: 10px;
             }
@@ -305,16 +407,19 @@
                 font-size: 1.8rem;
             }
 
-            #countdown-screen h1 {
-                font-size: 2rem;
-            }
-
-            #final-reveal-screen h1 {
-                font-size: 2.2rem;
-            }
-
             .carousel-slide img {
                 max-height: 300px;
+            }
+
+            .message-modal-content {
+                margin: 20px;
+                padding: 20px;
+            }
+            #success-modal h3, #error-modal h3 {
+                font-size: 1.5rem;
+            }
+            #success-modal p, #error-modal p {
+                font-size: 1rem;
             }
         }
     </style>
@@ -327,6 +432,22 @@
         <button id="start-button">Clique para começar</button>
     </div>
 
+    <div id="success-modal" class="message-modal-overlay">
+        <div class="message-modal-content">
+            <h3>Acerto!</h3>
+            <p id="success-message-text"></p>
+            <button class="close-modal-btn">Fechar</button>
+        </div>
+    </div>
+
+    <div id="error-modal" class="message-modal-overlay">
+        <div class="message-modal-content">
+            <h3>Quase lá!</h3>
+            <p id="error-message-text"></p>
+            <button class="close-modal-btn">Fechar</button>
+        </div>
+    </div>
+
     <div class="hearts-container"></div>
     <audio id="background-music" loop>
         <source src="sua-musica.mp3" type="audio/mpeg">
@@ -336,18 +457,10 @@
         <h1>Nosso Propósito se Aproxima</h1>
         <p>Uma contagem especial para o nosso primeiro mês e a celebração da Santa Ceia.</p>
         <div id="countdown-timer">
-            <div class="timer-unit"><span id="days">00</span>
-                <p>Dias</p>
-            </div>
-            <div class="timer-unit"><span id="hours">00</span>
-                <p>Horas</p>
-            </div>
-            <div class="timer-unit"><span id="minutes">00</span>
-                <p>Minutos</p>
-            </div>
-            <div class="timer-unit"><span id="seconds">00</span>
-                <p>Segundos</p>
-            </div>
+            <div class="timer-unit"><span id="days">00</span><p>Dias</p></div>
+            <div class="timer-unit"><span id="hours">00</span><p>Horas</p></div>
+            <div class="timer-unit"><span id="minutes">00</span><p>Minutos</p></div>
+            <div class="timer-unit"><span id="seconds">00</span><p>Segundos</p></div>
         </div>
         <div class="daily-content">
             <h2 id="daily-puzzle-title">Palavra do Dia</h2>
@@ -359,85 +472,215 @@
             </div>
         </div>
     </div>
-
-    <div id="final-reveal-screen" class="main-container">
+    
+    <div id="final-puzzle-screen" class="main-container hidden">
+        <h1>Chegou o Nosso Dia!</h1>
+        <p>A jornada da contagem nos trouxe até aqui. Antes da grande surpresa, a última palavra-chave que define tudo o que vivemos.</p>
+        <div class="final-puzzle-content">
+             <h2>A Palavra Final</h2>
+             <p class="daily-verse">"Eu sou do meu amado, e o meu amado é meu." (Cânticos 6:3a)</p>
+             <div class="puzzle-box">
+                <p>Decifre o anagrama: <b id="final-scrambled-word"></b></p>
+                <input type="text" id="final-puzzle-input">
+                <button id="check-final-puzzle-btn">Revelar</button>
+            </div>
         </div>
+    </div>
+
+    <div id="final-reveal-screen" class="main-container"></div>
 
     <script>
         $(document).ready(function () {
             const targetDate = new Date('2025-09-07T00:00:00');
             const music = $('#background-music')[0];
-
+            
+            function showModal(type, message) {
+                const modalId = '#' + type + '-modal';
+                const messageTextId = '#' + type + '-message-text';
+                $(messageTextId).text(message);
+                $(modalId).addClass('visible');
+            }
+            $('.close-modal-btn').on('click', function () {
+                $(this).closest('.message-modal-overlay').removeClass('visible');
+            });
+            
             $('#start-button').on('click', function () {
                 music.play().catch(e => console.log("A reprodução de áudio foi iniciada com sucesso."));
-                $('#welcome-modal').fadeOut(500, function() {
-                    $(this).remove();
-                });
+                $('#welcome-modal').fadeOut(500, function () { $(this).remove(); });
                 $('#countdown-screen').removeClass('hidden');
             });
-
+            
+            // --- ATUALIZADO: Mensagens exageradas e em maior quantidade ---
             const dailyData = [
-                { verse: "O amor é paciente, o amor é bondoso. 1 Coríntios 13:4", word: "AMOR" },
-                { verse: "Tudo posso naquele que me fortalece. Filipenses 4:13", word: "FORÇA" },
-                { verse: "O Senhor é o meu pastor; de nada terei falta. Salmos 23:1", word: "PASTOR" },
-                { verse: "Acima de tudo, porém, revistam-se do amor, que é o elo perfeito. Colossenses 3:14", word: "ELO" },
-                { verse: "Confie no Senhor de todo o seu coração. Provérbios 3:5", word: "CONFIAR" },
-                { verse: "Deleite-se no Senhor, e ele atenderá aos desejos do seu coração. Salmos 37:4", word: "DESEJOS" },
-                { verse: "Eu sou o caminho, a verdade e a vida. João 14:6", word: "VIDA" },
-                { verse: "Onde estiver o seu tesouro, aí também estará o seu coração. Mateus 6:21", word: "TESOURO" },
-                { verse: "A fé é a certeza daquilo que esperamos e a prova das coisas que não vemos. Hebreus 11:1", word: "FÉ" },
-                { verse: "Deus é o nosso refúgio e a nossa fortaleza. Salmos 46:1", word: "REFÚGIO" },
-                { verse: "Pois o amor de Deus foi derramado em nossos corações. Romanos 5:5", word: "ALIANÇA" },
-                { verse: "Eu e a minha casa serviremos ao Senhor. Josué 24:15", word: "CASA" }
+                // Ordem inversa: o último item é para o dia mais distante
+                { 
+                    verse: "O amor é paciente, o amor é bondoso. 1 Coríntios 13:4", 
+                    word: "AMOR", 
+                    successMsgs: [
+                        "Claro que você acertou! A palavra 'amor' praticamente grita o seu nome! 🥰",
+                        "Perfeito! Nosso amor é a chave que abre todos os enigmas do universo. ✨",
+                        "Você e a palavra 'amor' são sinônimos. Sabia que conseguiria, minha vida! 💖",
+                        "Exato! Cada letra dessa palavra descreve o que sinto por você. Te amo! 🎉",
+                        "Acertou! Prova de que nossa sintonia é tão perfeita que até as palavras nos obedecem. 🤩",
+                        "Boom! Direto no coração... e na resposta certa! Meu amor inteligente. ❤️"
+                    ], 
+                    errorMsgs: [
+                        "Como assim?! A palavra que nos define e ela nos traiu... Tente de novo, por nós! 😭",
+                        "O universo está em desequilíbrio! A palavra AMOR não foi encontrada... onde ela se escondeu?! 😱",
+                        "Não pode ser... Sinto uma lágrima escorrer. Tente novamente antes que eu me desmanche! 💔",
+                        "Essa palavra está se fazendo de difícil, assim como eu no início? Insista, meu bem! 😉",
+                        "É um teste dos céus para provar nossa paciência! O amor é paciente, lembra? Vamos lá! 🙏",
+                        "Incorreto... O som do meu coração se partindo ecoa pelo silêncio da sala... 😥"
+                    ] 
+                },
+                { 
+                    verse: "Tudo posso naquele que me fortalece. Filipenses 4:13", 
+                    word: "FORÇA", 
+                    successMsgs: [
+                        "Com a sua força, você desvenda qualquer coisa! Acertou, minha poderosa! 💪❤️",
+                        "Isso! Você é a minha fortaleza e a pessoa mais inteligente que conheço. Perfeita! ✨",
+                        "Exato! Juntos temos a força de mil universos. E você, a inteligência de todos eles! 🥰",
+                        "Sabia! A força do seu raciocínio é imbatível. Te admiro tanto! 💖",
+                        "Conseguiu! Mais forte que esse enigma, só o meu amor por você. 🎉",
+                        "Nem precisou de força, só do seu cérebro maravilhoso! Te amo! 🤩"
+                    ], 
+                    errorMsgs: [
+                        "Oh, céus! Nossas forças foram drenadas por este anagrama maligno! Recarregue e tente de novo! 😱",
+                        "Até o Sansão tinha seus dias de fraqueza... Não desista, minha Dalila do bem! 😂",
+                        "Faltou um pouquinho de força... ou só uma letra diferente. Você consegue! 💪",
+                        "Estou desolado... A palavra 'força' nos abandonou. Traga-a de volta para nós! 😭",
+                        "É uma conspiração! As letras se uniram para nos derrotar! Mostre a elas quem manda! 💥",
+                        "Um erro? Sinto minhas energias se esvaindo... Rápido, acerte para me salvar! 💔"
+                    ] 
+                },
+                { 
+                    verse: "O Senhor é o meu pastor; de nada terei falta. Salmos 23:1", 
+                    word: "PASTOR", 
+                    successMsgs: [
+                        "Ele nos guia, e o meu coração te encontrou! Acertou, minha ovelhinha amada! 🐑💕",
+                        "Perfeito! Você pastoreou as letras para o lugar certo. Que orgulho! ✨",
+                        "Com você ao meu lado, de nada terei falta. Nem de respostas certas! Te amo! 🥰",
+                        "Isso! Você tem o dom de me guiar para a felicidade. E para a resposta certa! 💖",
+                        "Meu Deus, você é incrível! Achou a palavra que nos protege. 🤩",
+                        "Certíssimo! Você é a pastora do meu coração. ❤️"
+                    ], 
+                    errorMsgs: [
+                        "Oh, não! As letrinhas se desgarraram do rebanho! Ajude-as a voltar pra casa! 😭",
+                        "Acho que um lobo mau embaralhou as letras... Seja a heroína e salve o dia! 🐺",
+                        "Estamos perdidos na escuridão deste anagrama... Seja minha luz e nos guie para a resposta! 😱",
+                        "Nem o melhor pastor encontraria essas letras... mas eu confio em você! Tente de novo! 🙏",
+                        "Béééé... acho que essa não é a resposta. Tente de novo, meu bem! 😂",
+                        "Cadê meu cajado pra colocar ordem nessas letras?! Vamos lá, você consegue! 💪"
+                    ] 
+                },
+                { 
+                    verse: "Acima de tudo, porém, revistam-se do amor, que é o elo perfeito. Colossenses 3:14", 
+                    word: "ELO", 
+                    successMsgs: [
+                        "Nosso elo é inquebrável e sua mente é imbatível! Acertou! 🥰",
+                        "Perfeito! Cada acerto seu fortalece o elo que nos une. ✨",
+                        "Isso! Uma conexão tão forte como a nossa desvenda qualquer coisa. Te amo! 🔗💖",
+                        "Você é o elo perdido entre a genialidade e a perfeição. Acertou, vida! 🤩",
+                        "Exato! Conectou as letras e o meu coração. ❤️",
+                        "Que ligação perfeita! Assim como nós dois. Acertou! 🎉"
+                    ], 
+                    errorMsgs: [
+                        "A conexão caiu! As letras estão fora de sintonia... Tente reconectar! 😭",
+                        "Este elo está mais difícil de desatar que nó de marinheiro! Me ajuda! 😥",
+                        "Sinto uma desconexão... Acho que as letras estão brigadas. Faça as pazes entre elas! 💔",
+                        "Houve uma falha na nossa Matrix... Tente de novo, minha Trinity! 😂",
+                        "Parece que esse elo se partiu... mas nosso amor conserta. Tente outra vez! 🙏",
+                        "Um erro?! Onde está o manual de instruções pra montar esse quebra-cabeça?! 😱"
+                    ] 
+                },
+                // Adicionei mais mensagens para os outros dias também...
+                { verse: "Confie no Senhor de todo o seu coração. Provérbios 3:5", word: "CONFIAR", successMsgs: ["Eu confio em você pra tudo, até pra resolver enigmas! Perfeita! ❤️", "Acertou! Viu como eu confiei no seu potencial? 🥰", "Confiança é a base de tudo, e a sua inteligência é a base desses acertos! ✨", "Isso! Pode confiar que meu orgulho por você só aumenta! 💖"], errorMsgs: ["Confie em mim, essa não é a resposta... Tente de novo! 😉", "Estou em pedaços... minha confiança nas letras foi abalada! 😭", "É preciso confiar no processo... e tentar de novo! 🙏", "Até a confiança fica abalada com um enigma desses. Vamos lá! 💪"] },
+                { verse: "Deleite-se no Senhor, e ele atenderá aos desejos do seu coração. Salmos 37:4", word: "DESEJOS", successMsgs: ["Você é a realização de todos os meus desejos! Acertou! ✨", "Perfeito! Desejo atendido: ver você brilhar! 🥰", "Meu maior desejo é você, e você acertando é um bônus! Te amo! 💖", "Isso! Nem o gênio da lâmpada seria tão rápido! 램프"], errorMsgs: ["Desejo... que você tivesse acertado. Tente de novo, por favorzinho! 😭", "Meus desejos foram frustrados por um anagrama... Que drama! 😥", "Cuidado com o que deseja... pode não ser a resposta certa! 😂", "Faça um pedido e tente de novo! Você consegue! 🙏"] },
+                { verse: "Eu sou o caminho, a verdade e a vida. João 14:6", word: "VIDA", successMsgs: ["Você é a VIDA do meu viver! Acertou, meu amor! ❤️", "Perfeito! A resposta certa pra dar mais vida aos meus dias! ✨", "Com você, a vida é mais colorida e cheia de acertos! Te amo! 🥰", "Exato! Minha vida, meu amor, meu gênio particular! 💖"], errorMsgs: ["Ai, que dor na alma... uma vida de tentativas e ainda erramos. Tente de novo! 💔", "Minha vida está passando diante dos meus olhos... e a resposta não aparece! 😱", "Sem você, não há vida. Sem a resposta certa, não há paz! Me salva! 😭", "A vida é cheia de desafios, e esse anagrama é um deles! Vamos! 💪"] },
+                { verse: "Onde estiver o seu tesouro, aí também estará o seu coração. Mateus 6:21", word: "TESOURO", successMsgs: ["ACHEI O MEU TESOURO! E ele ainda é super inteligente! 🥰", "Você vale mais que todos os tesouros do mundo! Acertou! 💎", "O mapa do meu coração leva até você. Resposta perfeita! ❤️", "X marca o lugar! E o lugar é o do seu acerto genial! ✨"], errorMsgs: ["Piratas roubaram a resposta! Vamos recuperar nosso tesouro, tente de novo! ⚔️", "Este mapa do tesouro está me deixando louco! Onde está o X?! 🗺️", "Acho que cavamos no lugar errado... Tente outra coordenada! 😂", "Um baú de enganos! O verdadeiro tesouro está na próxima tentativa! 😭"] },
+                { verse: "A fé é a certeza daquilo que esperamos e a prova das coisas que não vemos. Hebreus 11:1", word: "FÉ", successMsgs: ["Eu tenho FÉ que somos perfeitos um para o outro! E você acertou! 🙏❤️", "Isso! A prova da sua inteligência é essa resposta! Brilhante! ✨", "Minha fé em você nunca falha! Sabia que conseguiria! 🥰", "Amém! Acertou em cheio, meu amor! 💖"], errorMsgs: ["Minha fé está sendo testada por estas letras embaralhadas! Oh, céus! 😱", "É preciso fé para mover montanhas... e para resolver isso. Tente de novo! 🙏", "Estou perdendo a fé na humanidade... Brincadeira! Mas tente de novo, vida! 😂", "Um ato de fé, por favor, e mais uma tentativa! Você consegue! 💪"] },
+                { verse: "Deus é o nosso refúgio e a nossa fortaleza. Salmos 46:1", word: "REFÚGIO", successMsgs: ["Em você eu encontro meu refúgio, e em mim você encontra orgulho! Acertou! 🥰", "Você é meu porto seguro, meu gênio! Perfeito! ❤️", "Nenhum enigma é forte o bastante pra abalar nosso refúgio! ✨", "Certíssimo! Meu lugar seguro é ao seu lado. 💖"], errorMsgs: ["Estou desabrigado e perdido neste anagrama! Socorro! 😭", "Procurei, procurei e não achei o refúgio da resposta certa! 😥", "Este enigma é uma tempestade! Encontre o refúgio, por favor! ⛈️", "As muralhas da lógica ruíram... Reconstrua-as com outra tentativa! 🙏"] },
+                { verse: "Pois o amor de Deus foi derramado em nossos corações. Romanos 5:5", word: "ALIANÇA", successMsgs: ["Nossa aliança é eterna e sua inteligência é gigante! Acertou! ✨", "A aliança mais perfeita é a nossa. E a resposta mais perfeita é a sua! 🥰", "Selado com um beijo e um acerto! Te amo! 💖", "Isso! Mais um elo da nossa aliança fortalecido! ❤️"], errorMsgs: ["A nossa aliança está em jogo! O destino do nosso amor depende desta resposta! 😱", "Este anagrama tenta quebrar nossa aliança, mas não conseguirá! Tente de novo! 💪", "Um anel de letras confusas... Desvende este mistério, meu amor! 💍", "Oh, que tragédia! A aliança foi quebrada... por um erro. Conserte isso, rápido! 💔"] },
+                { verse: "Eu e a minha casa serviremos ao Senhor. Josué 24:15", word: "CASA", successMsgs: ["Você é meu lar, minha casa, meu tudo! Acertou! 🏡❤️", "A base da nossa casa é forte, e a base do seu saber também! Perfeito! ✨", "Bem-vinda ao lar da resposta correta! Te amo! 🥰", "Com você, qualquer lugar é casa. E qualquer enigma é fácil! 💖"], errorMsgs: ["As paredes da lógica estão desmoronando! Chame o arquiteto! 😭", "Acho que erramos o endereço da resposta... Tente o CEP vizinho! 😂", "Casa, doce casa... mas onde está a resposta certa?! 😥", "Uma casa dividida não prospera! Una essas letras, pelo nosso futuro! 🙏"] }
             ];
 
             function scrambleWord(word) {
                 let a = word.toUpperCase().split(""), n = a.length;
-                for (let i = n - 1; i > 0; i--) {
-                    let j = Math.floor(Math.random() * (i + 1));
-                    [a[i], a[j]] = [a[j], a[i]];
-                }
+                for (let i = n - 1; i > 0; i--) { let j = Math.floor(Math.random() * (i + 1));[a[i], a[j]] = [a[j], a[i]]; }
                 return a.join("");
             }
 
             let todayData;
+            let currentDay = -1; 
 
             function updateDailyContent() {
                 const now = new Date();
                 const daysRemaining = Math.max(0, Math.floor((targetDate - now) / (1000 * 60 * 60 * 24)));
-                const dataIndex = Math.min(daysRemaining, dailyData.length - 1);
-                todayData = dailyData[dataIndex];
+                
+                if (daysRemaining !== currentDay) {
+                    currentDay = daysRemaining;
+                    
+                    const dataIndex = Math.min(daysRemaining, dailyData.length - 1);
+                    todayData = dailyData[dataIndex];
 
-                $('#daily-verse-text').text(todayData.verse);
-                $('#scrambled-word').text(scrambleWord(todayData.word));
+                    if(todayData) {
+                        $('#daily-verse-text').text(todayData.verse);
+                        $('#scrambled-word').text(scrambleWord(todayData.word));
+                    }
+                }
             }
 
             $('#check-puzzle-btn').on('click', function () {
+                if (!todayData) return;
                 const userAnswer = $('#puzzle-input').val().toUpperCase();
-
-                const successMessages = [
-                    "Você conseguiu! Nossa sintonia é perfeita! ✨❤️",
-                    "Acertou! Sabia que sua inteligência era tão grande quanto seu coração. 🥰",
-                    "Perfeito, meu amor! Desvendou o segredo. 💖",
-                    "Isso! Mais um passo em nossa jornada juntos. Te amo! 👣💕",
-                    "Exato! Você é simplesmente brilhante! 🤩"
-                ];
-
-                const errorMessages = [
-                    "Oh, não! O universo conspira contra nós... Tente de novo! 😱",
-                    "Quase lá, meu amor! Mas o destino nos testou... de novo.  драматиc",
-                    "Será um teste dos céus? Tente outra vez, meu bem! 🙏",
-                    "Coração partido... por um anagrama. Vamos, você consegue! 💔",
-                    "Essa palavra é mais teimosa que eu! Tente de novo, vida. 🤔"
-                ];
+                const successMessages = todayData.successMsgs;
+                const errorMessages = todayData.errorMsgs;
 
                 if (userAnswer === todayData.word) {
                     const randomIndex = Math.floor(Math.random() * successMessages.length);
-                    alert(successMessages[randomIndex]);
+                    showModal('success', successMessages[randomIndex]);
                     $('#puzzle-input').val('');
                 } else {
                     const randomIndex = Math.floor(Math.random() * errorMessages.length);
-                    alert(errorMessages[randomIndex]);
+                    showModal('error', errorMessages[randomIndex]);
+                }
+            });
+
+            const finalWord = "PROPÓSITO";
+            $('#final-scrambled-word').text(scrambleWord(finalWord));
+
+            $('#check-final-puzzle-btn').on('click', function () {
+                const finalUserAnswer = $('#final-puzzle-input').val().toUpperCase();
+                if (finalUserAnswer === finalWord) {
+                    $('body').css('background', '#f9f5f6');
+                    $('#final-puzzle-screen').hide();
+
+                    $('#final-reveal-screen').html(`
+                        <h1>07.09.2025 - O Primeiro de Muitos</h1>
+                        <p class="final-verse">"Assim, permanecem agora estes três: a fé, a esperança e o amor. O maior deles, porém, é o amor." (1 Coríntios 13:13)</p>
+                        <p>Meu amor, hoje não celebramos apenas um mês, mas a confirmação diária de um propósito que Deus traçou para nós. Cada dia ao seu lado é como viver a resposta de uma oração. Que este seja o primeiro de incontáveis meses, sempre com Ele como nosso centro e a Santa Ceia como o selo da nossa aliança. Você é o meu presente e a minha certeza.</p>
+                        <p>Eu sou perdidamente apaixonado por ti. Um mês que mais parece uma vida inteira, um sonho vívido enquanto estou acordado. Nunca imaginei que amaria tanto alguém como te amo, que desejaria tanto alguém, quanto te desejo. Deus deu você para mim: a benção mais perfeita, a dona do beijo mais doce, do toque mais delicado e do abraço mais aconchegante. Quero teu beijo, querer teu abraço, ter você pertinho, ver seu sorriso... te ver.</p>
+                        <div class="carousel-container">
+                           <div class="carousel-track">
+                                <div class="carousel-slide"><img src="1.jpg" alt="Memória 1"></div><div class="carousel-slide"><img src="2.jpg" alt="Memória 2"></div><div class="carousel-slide"><img src="3.jpg" alt="Memória 3"></div><div class="carousel-slide"><img src="4.jpg" alt="Memória 4"></div><div class="carousel-slide"><img src="5.webp" alt="Memória 5"></div><div class="carousel-slide"><img src="6.jpg" alt="Memória 6"></div>
+                            </div>
+                            <button class="carousel-btn prev-btn">❮</button><button class="carousel-btn next-btn">❯</button>
+                        </div>
+                        <p>Quero te dizer que te amo muito, minha neném. Que este dia esteja marcado e que muitos meses e anos virão para nós vivermos juntos. Eu quero e vou casar contigo, Deus já nos abençoou e nos abençoará mais e mais.</p>
+                        <p>Eu te amo, hoje e para sempre.</p>
+                    `).show();
+                    
+                    let currentIndex = 0;
+                    const slides = $('#final-reveal-screen .carousel-slide');
+                    const totalSlides = slides.length;
+                    function updateCarousel() { $('#final-reveal-screen .carousel-track').css('transform', `translateX(-${currentIndex * 100}%)`); }
+                    function nextSlide() { currentIndex = (currentIndex + 1) % totalSlides; updateCarousel(); }
+                    let autoSlideInterval = setInterval(nextSlide, 5000);
+                    $('#final-reveal-screen .next-btn').on('click', function () { clearInterval(autoSlideInterval); nextSlide(); autoSlideInterval = setInterval(nextSlide, 5000); });
+                    $('#final-reveal-screen .prev-btn').on('click', function () { clearInterval(autoSlideInterval); currentIndex = (currentIndex - 1 + totalSlides) % totalSlides; updateCarousel(); autoSlideInterval = setInterval(nextSlide, 5000); });
+
+                } else {
+                    showModal('error', "A palavra que nos define é mais forte... Tente de novo, meu amor! ❤️");
                 }
             });
 
@@ -447,60 +690,12 @@
 
                 if (distance <= 0) {
                     clearInterval(countdownInterval);
-                    $('body').css('background', '#f9f5f6');
                     $('#countdown-screen').hide();
-                    
-                    // --- TEXTO ATUALIZADO APLICADO AQUI ---
-                    $('#final-reveal-screen').html(`
-                        <h1>07.09.2025 - O Primeiro de Muitos</h1>
-                        <p class="final-verse">"Assim, permanecem agora estes três: a fé, a esperança e o amor. O maior deles, porém, é o amor." (1 Coríntios 13:13)</p>
-                        <p>Meu amor, hoje não celebramos apenas um mês, mas a confirmação diária de um propósito que Deus traçou para nós. Cada dia ao seu lado é como viver a resposta de uma oração. Que este seja o primeiro de incontáveis meses, sempre com Ele como nosso centro e a Santa Ceia como o selo da nossa aliança. Você é o meu presente e a minha certeza.</p>
-                        <p>Eu sou perdidamente apaixonado por ti. Um mês que mais parece uma vida inteira, um sonho vívido enquanto estou acordado. Nunca imaginei que amaria tanto alguém como te amo, que desejaria tanto alguém, quanto te desejo. Deus deu você para mim: a benção mais perfeita, a dona do beijo mais doce, do toque mais delicado e do abraço mais aconchegante. Quero teu beijo, querer teu abraço, ter você pertinho, ver seu sorriso... te ver.</p>
-                        <div class="carousel-container">
-                           <div class="carousel-track">
-                                <div class="carousel-slide"><img src="1.jpg" alt="Memória 1"></div>
-                                <div class="carousel-slide"><img src="2.jpg" alt="Memória 2"></div>
-                                <div class="carousel-slide"><img src="3.jpg" alt="Memória 3"></div>
-                                <div class="carousel-slide"><img src="4.jpg" alt="Memória 4"></div>
-                                <div class="carousel-slide"><img src="5.webp" alt="Memória 5"></div>
-                                <div class="carousel-slide"><img src="6.jpg" alt="Memória 6"></div>
-                            </div>
-                            <button class="carousel-btn prev-btn">❮</button>
-                            <button class="carousel-btn next-btn">❯</button>
-                        </div>
-                        <p>Quero te dizer que te amo muito, minha neném. Que este dia esteja marcado e que muitos meses e anos virão para nós vivermos juntos. Eu quero e vou casar contigo, Deus já nos abençoou e nos abençoará mais e mais.</p>
-                        <p>Eu te amo, hoje e para sempre.</p>
-                    `).show();
-                    
-                    let currentIndex = 0;
-                    const slides = $('#final-reveal-screen .carousel-slide');
-                    const totalSlides = slides.length;
-
-                    function updateCarousel() {
-                        $('#final-reveal-screen .carousel-track').css('transform', `translateX(-${currentIndex * 100}%)`);
-                    }
-
-                    function nextSlide() {
-                        currentIndex = (currentIndex + 1) % totalSlides;
-                        updateCarousel();
-                    }
-                    
-                    let autoSlideInterval = setInterval(nextSlide, 5000);
-
-                    $('#final-reveal-screen .next-btn').on('click', function () {
-                        clearInterval(autoSlideInterval);
-                        nextSlide();
-                        autoSlideInterval = setInterval(nextSlide, 5000);
-                    });
-                    $('#final-reveal-screen .prev-btn').on('click', function () {
-                        clearInterval(autoSlideInterval);
-                        currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
-                        updateCarousel();
-                        autoSlideInterval = setInterval(nextSlide, 5000);
-                    });
-
+                    $('#final-puzzle-screen').removeClass('hidden').show();
                     return;
                 }
+                
+                updateDailyContent(); 
 
                 const days = Math.floor(distance / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
