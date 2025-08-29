@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Uma Contagem para o Nosso Dia</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Poppins:wght@300;400&display=swap"
+        rel="stylesheet">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            width: 100%;
+            min-height: 100vh;
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #4c1d34 0%, #1c0b19 100%);
+            color: #fde2f3;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+        
+        #welcome-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 100;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        #welcome-modal h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.5rem;
+            color: #fff;
+            margin-bottom: 20px;
+        }
+
+        #start-button {
+            background: #e91e63;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            cursor: pointer;
+            transition: background 0.3s, transform 0.2s;
+        }
+
+        #start-button:hover {
+            background: #c2185b;
+            transform: scale(1.05);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .hearts-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .heart {
+            position: absolute;
+            bottom: -50px;
+            color: rgba(255, 105, 180, 0.2);
+            animation: float 15s linear infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-120vh) translateX(10vw);
+                opacity: 0;
+            }
+        }
+
+        .main-container {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            max-width: 800px;
+            text-align: center;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+        }
+
+        #countdown-screen h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 2.8rem;
+            margin-bottom: 20px;
+            color: #fff;
+        }
+
+        #countdown-timer {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 30px 0;
+        }
+
+        .timer-unit {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 15px 10px;
+            border-radius: 10px;
+            min-width: 80px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .timer-unit span {
+            display: block;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .timer-unit p {
+            font-size: 0.8rem;
+            color: #fde2f3;
+            margin: 0;
+            text-transform: uppercase;
+        }
+
+        .daily-content {
+            margin-top: 30px;
+            border-top: 1px solid rgba(255, 255, 255, 0.2);
+            padding-top: 30px;
+        }
+
+        .daily-content h2 {
+            font-family: 'Playfair Display', serif;
+            font-size: 1.8rem;
+            color: #fff;
+        }
+
+        .daily-verse {
+            font-style: italic;
+            margin: 15px 0;
+            font-size: 1.1rem;
+        }
+
+        .puzzle-box input {
+            width: 150px;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #fde2f3;
+            background: transparent;
+            color: #fff;
+            text-align: center;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+        }
+
+        .puzzle-box button {
+            background: #e91e63;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            padding: 11px 20px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-left: 10px;
+            transition: background 0.3s;
+        }
+
+        .puzzle-box button:hover {
+            background: #c2185b;
+        }
+
+        #final-reveal-screen h1 {
+            font-family: 'Playfair Display', serif;
+            font-size: 3rem;
+            color: #e91e63;
+        }
+
+        #final-reveal-screen p {
+            font-size: 1.1rem;
+            line-height: 1.8;
+            max-width: 600px;
+            margin: 20px auto;
+        }
+
+        .final-verse {
+            font-weight: bold;
+            font-style: italic;
+            color: #333;
+        }
+
+        #final-reveal-screen {
+            color: #333;
+            background: #fff;
+            display: none;
+            animation: fadeIn 1.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .carousel-container {
+            position: relative;
+            max-width: 600px;
+            margin: 30px auto;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .carousel-track {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+
+        .carousel-slide {
+            min-width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .carousel-slide img {
+            width: 100%;
+            max-height: 400px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .carousel-btn {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.7);
+            border: none;
+            font-size: 1.5rem;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 50%;
+            z-index: 10;
+        }
+
+        .prev-btn {
+            left: 10px;
+        }
+
+        .next-btn {
+            right: 10px;
+        }
+
+        @media (max-width: 600px) {
+            #countdown-timer {
+                gap: 10px;
+            }
+
+            .timer-unit {
+                min-width: 65px;
+                padding: 10px 5px;
+            }
+
+            .timer-unit span {
+                font-size: 1.8rem;
+            }
+
+            #countdown-screen h1 {
+                font-size: 2rem;
+            }
+
+            #final-reveal-screen h1 {
+                font-size: 2.2rem;
+            }
+
+            .carousel-slide img {
+                max-height: 300px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div id="welcome-modal">
+        <h2>Bem-vinda, meu amor</h2>
+        <button id="start-button">Clique para começar</button>
+    </div>
+
+    <div class="hearts-container"></div>
+    <audio id="background-music" loop>
+        <source src="sua-musica.mp3" type="audio/mpeg">
+    </audio>
+
+    <div id="countdown-screen" class="main-container hidden">
+        <h1>Nosso Propósito se Aproxima</h1>
+        <p>Uma contagem especial para o nosso primeiro mês e a celebração da Santa Ceia.</p>
+        <div id="countdown-timer">
+            <div class="timer-unit"><span id="days">00</span>
+                <p>Dias</p>
+            </div>
+            <div class="timer-unit"><span id="hours">00</span>
+                <p>Horas</p>
+            </div>
+            <div class="timer-unit"><span id="minutes">00</span>
+                <p>Minutos</p>
+            </div>
+            <div class="timer-unit"><span id="seconds">00</span>
+                <p>Segundos</p>
+            </div>
+        </div>
+        <div class="daily-content">
+            <h2 id="daily-puzzle-title">Palavra do Dia</h2>
+            <p class="daily-verse" id="daily-verse-text">Carregando versículo...</p>
+            <div class="puzzle-box">
+                <p>Decifre o anagrama: <b id="scrambled-word"></b></p>
+                <input type="text" id="puzzle-input">
+                <button id="check-puzzle-btn">Verificar</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="final-reveal-screen" class="main-container">
+        </div>
+
+    <script>
+        $(document).ready(function () {
+            const targetDate = new Date('2025-09-07T00:00:00');
+            const music = $('#background-music')[0];
+
+            $('#start-button').on('click', function () {
+                music.play().catch(e => console.log("A reprodução de áudio foi iniciada com sucesso."));
+                $('#welcome-modal').fadeOut(500, function() {
+                    $(this).remove();
+                });
+                $('#countdown-screen').removeClass('hidden');
+            });
+
+            const dailyData = [
+                { verse: "O amor é paciente, o amor é bondoso. 1 Coríntios 13:4", word: "AMOR" },
+                { verse: "Tudo posso naquele que me fortalece. Filipenses 4:13", word: "FORÇA" },
+                { verse: "O Senhor é o meu pastor; de nada terei falta. Salmos 23:1", word: "PASTOR" },
+                { verse: "Acima de tudo, porém, revistam-se do amor, que é o elo perfeito. Colossenses 3:14", word: "ELO" },
+                { verse: "Confie no Senhor de todo o seu coração. Provérbios 3:5", word: "CONFIAR" },
+                { verse: "Deleite-se no Senhor, e ele atenderá aos desejos do seu coração. Salmos 37:4", word: "DESEJOS" },
+                { verse: "Eu sou o caminho, a verdade e a vida. João 14:6", word: "VIDA" },
+                { verse: "Onde estiver o seu tesouro, aí também estará o seu coração. Mateus 6:21", word: "TESOURO" },
+                { verse: "A fé é a certeza daquilo que esperamos e a prova das coisas que não vemos. Hebreus 11:1", word: "FÉ" },
+                { verse: "Deus é o nosso refúgio e a nossa fortaleza. Salmos 46:1", word: "REFÚGIO" },
+                { verse: "Pois o amor de Deus foi derramado em nossos corações. Romanos 5:5", word: "ALIANÇA" },
+                { verse: "Eu e a minha casa serviremos ao Senhor. Josué 24:15", word: "CASA" }
+            ];
+
+            function scrambleWord(word) {
+                let a = word.toUpperCase().split(""), n = a.length;
+                for (let i = n - 1; i > 0; i--) {
+                    let j = Math.floor(Math.random() * (i + 1));
+                    [a[i], a[j]] = [a[j], a[i]];
+                }
+                return a.join("");
+            }
+
+            let todayData;
+
+            function updateDailyContent() {
+                const now = new Date();
+                const daysRemaining = Math.max(0, Math.floor((targetDate - now) / (1000 * 60 * 60 * 24)));
+                const dataIndex = Math.min(daysRemaining, dailyData.length - 1);
+                todayData = dailyData[dataIndex];
+
+                $('#daily-verse-text').text(todayData.verse);
+                $('#scrambled-word').text(scrambleWord(todayData.word));
+            }
+
+            $('#check-puzzle-btn').on('click', function () {
+                const userAnswer = $('#puzzle-input').val().toUpperCase();
+
+                const successMessages = [
+                    "Você conseguiu! Nossa sintonia é perfeita! ✨❤️",
+                    "Acertou! Sabia que sua inteligência era tão grande quanto seu coração. 🥰",
+                    "Perfeito, meu amor! Desvendou o segredo. 💖",
+                    "Isso! Mais um passo em nossa jornada juntos. Te amo! 👣💕",
+                    "Exato! Você é simplesmente brilhante! 🤩"
+                ];
+
+                const errorMessages = [
+                    "Oh, não! O universo conspira contra nós... Tente de novo! 😱",
+                    "Quase lá, meu amor! Mas o destino nos testou... de novo.  драматиc",
+                    "Será um teste dos céus? Tente outra vez, meu bem! 🙏",
+                    "Coração partido... por um anagrama. Vamos, você consegue! 💔",
+                    "Essa palavra é mais teimosa que eu! Tente de novo, vida. 🤔"
+                ];
+
+                if (userAnswer === todayData.word) {
+                    const randomIndex = Math.floor(Math.random() * successMessages.length);
+                    alert(successMessages[randomIndex]);
+                    $('#puzzle-input').val('');
+                } else {
+                    const randomIndex = Math.floor(Math.random() * errorMessages.length);
+                    alert(errorMessages[randomIndex]);
+                }
+            });
+
+            const countdownInterval = setInterval(function () {
+                const now = new Date().getTime();
+                const distance = targetDate - now;
+
+                if (distance <= 0) {
+                    clearInterval(countdownInterval);
+                    $('body').css('background', '#f9f5f6');
+                    $('#countdown-screen').hide();
+                    
+                    // --- TEXTO ATUALIZADO APLICADO AQUI ---
+                    $('#final-reveal-screen').html(`
+                        <h1>07.09.2025 - O Primeiro de Muitos</h1>
+                        <p class="final-verse">"Assim, permanecem agora estes três: a fé, a esperança e o amor. O maior deles, porém, é o amor." (1 Coríntios 13:13)</p>
+                        <p>Meu amor, hoje não celebramos apenas um mês, mas a confirmação diária de um propósito que Deus traçou para nós. Cada dia ao seu lado é como viver a resposta de uma oração. Que este seja o primeiro de incontáveis meses, sempre com Ele como nosso centro e a Santa Ceia como o selo da nossa aliança. Você é o meu presente e a minha certeza.</p>
+                        <p>Eu sou perdidamente apaixonado por ti. Um mês que mais parece uma vida inteira, um sonho vívido enquanto estou acordado. Nunca imaginei que amaria tanto alguém como te amo, que desejaria tanto alguém, quanto te desejo. Deus deu você para mim: a benção mais perfeita, a dona do beijo mais doce, do toque mais delicado e do abraço mais aconchegante. Quero teu beijo, querer teu abraço, ter você pertinho, ver seu sorriso... te ver.</p>
+                        <div class="carousel-container">
+                           <div class="carousel-track">
+                                <div class="carousel-slide"><img src="1.jpg" alt="Memória 1"></div>
+                                <div class="carousel-slide"><img src="2.jpg" alt="Memória 2"></div>
+                                <div class="carousel-slide"><img src="3.jpg" alt="Memória 3"></div>
+                                <div class="carousel-slide"><img src="4.jpg" alt="Memória 4"></div>
+                                <div class="carousel-slide"><img src="5.webp" alt="Memória 5"></div>
+                                <div class="carousel-slide"><img src="6.jpg" alt="Memória 6"></div>
+                            </div>
+                            <button class="carousel-btn prev-btn">❮</button>
+                            <button class="carousel-btn next-btn">❯</button>
+                        </div>
+                        <p>Quero te dizer que te amo muito, minha neném. Que este dia esteja marcado e que muitos meses e anos virão para nós vivermos juntos. Eu quero e vou casar contigo, Deus já nos abençoou e nos abençoará mais e mais.</p>
+                        <p>Eu te amo, hoje e para sempre.</p>
+                    `).show();
+                    
+                    let currentIndex = 0;
+                    const slides = $('#final-reveal-screen .carousel-slide');
+                    const totalSlides = slides.length;
+
+                    function updateCarousel() {
+                        $('#final-reveal-screen .carousel-track').css('transform', `translateX(-${currentIndex * 100}%)`);
+                    }
+
+                    function nextSlide() {
+                        currentIndex = (currentIndex + 1) % totalSlides;
+                        updateCarousel();
+                    }
+                    
+                    let autoSlideInterval = setInterval(nextSlide, 5000);
+
+                    $('#final-reveal-screen .next-btn').on('click', function () {
+                        clearInterval(autoSlideInterval);
+                        nextSlide();
+                        autoSlideInterval = setInterval(nextSlide, 5000);
+                    });
+                    $('#final-reveal-screen .prev-btn').on('click', function () {
+                        clearInterval(autoSlideInterval);
+                        currentIndex = (currentIndex - 1 + totalSlides) % totalSlides;
+                        updateCarousel();
+                        autoSlideInterval = setInterval(nextSlide, 5000);
+                    });
+
+                    return;
+                }
+
+                const days = Math.floor(distance / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                $('#days').text(String(days).padStart(2, '0'));
+                $('#hours').text(String(hours).padStart(2, '0'));
+                $('#minutes').text(String(minutes).padStart(2, '0'));
+                $('#seconds').text(String(seconds).padStart(2, '0'));
+
+            }, 1000);
+
+            setInterval(() => {
+                const heart = $('<div class="heart">❤</div>').css({
+                    'left': Math.random() * 100 + 'vw',
+                    'animation-duration': (Math.random() * 8 + 7) + 's',
+                    'font-size': (Math.random() * 20 + 10) + 'px'
+                });
+                $('.hearts-container').append(heart);
+                setTimeout(() => heart.remove(), 15000);
+            }, 500);
+
+            updateDailyContent();
+        });
+    </script>
+</body>
+
+</html>
